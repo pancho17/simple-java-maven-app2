@@ -1,29 +1,40 @@
-pipeline {
-    agent {
-        docker {
-            image 'maven:3-alpine'
-            args '-v /root/.m2:/root/.m2'
-        }
+pipeline{
+    agent any
+    tools{
+        maven 'maven'
+        jdk 'jdk-16.0.1'
     }
-    stages {
-        stage('Build') {
-            steps {
-                sh 'mvn -B -DskipTests clean package'
+    stages{
+        stage("Initialize"){
+            steps{
+                sh ''' 
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                '''
             }
         }
-        stage('Test') {
-            steps {
-                sh 'mvn test'
+        stage("clean up"){
+            steps{
+                deleteDir()
             }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
+        }
+        stage("clone repo" ){
+            steps{
+                sh "git clone https://github.com/pancho17/simple-java-maven-app2.git"
+            }
+        }
+        stage("build"){
+            steps{
+                dir("simple-java-maven-app2"){
+                    sh "mvn clean install"
                 }
             }
         }
-        stage('Deliver') {
-            steps {
-                sh './jenkins/scripts/deliver.sh'
+        stage("test"){
+            steps{
+                dir("simple-java-maven-app2"){
+                    sh "mvn test"
+                }
             }
         }
     }
