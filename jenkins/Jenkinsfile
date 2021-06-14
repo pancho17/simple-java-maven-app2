@@ -37,10 +37,5 @@ pipeline{
                 }
             }
         }
-        stage("complete"){
-            steps{
-                echo 'Job Complete!'
-            }
-        }
     }
 }
